@@ -1,13 +1,20 @@
 <div class="row g-3">
     <div class="col-md-6">
         <label for="lansia_id" class="form-label">Lansia <span class="text-danger">*</span></label>
-        <select name="lansia_id" id="lansia_id" class="form-select @error('lansia_id') is-invalid @enderror" required>
+        <select name="lansia_id"
+                id="lansia_id"
+                class="form-select @error('lansia_id') is-invalid @enderror"
+                required>
+
             <option value="">Pilih Lansia</option>
+
             @foreach($lansiaList as $lansia)
-                <option value="{{ $lansia->id }}" {{ old('lansia_id', $healthRecord->lansia_id ?? '') == $lansia->id ? 'selected' : '' }}>
+                <option value="{{ $lansia->id }}"
+                    {{ old('lansia_id', $healthRecord?->lansia_id) == $lansia->id ? 'selected' : '' }}>
                     {{ $lansia->nama }} - {{ $lansia->nik }}
                 </option>
             @endforeach
+
         </select>
         @error('lansia_id')
             <div class="invalid-feedback">{{ $message }}</div>
@@ -18,7 +25,7 @@
         <label for="tanggal_pemeriksaan" class="form-label">Tanggal Pemeriksaan <span class="text-danger">*</span></label>
         <input type="date" name="tanggal_pemeriksaan" id="tanggal_pemeriksaan" 
                class="form-control @error('tanggal_pemeriksaan') is-invalid @enderror" 
-               value="{{ old('tanggal_pemeriksaan', $healthRecord->tanggal_pemeriksaan?->format('Y-m-d') ?? '') }}" required>
+               value="{{ old('tanggal_pemeriksaan', $healthRecord?->tanggal_pemeriksaan?->format('Y-m-d')) }}"
         @error('tanggal_pemeriksaan')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
@@ -35,7 +42,7 @@
         <label for="berat_badan" class="form-label">Berat Badan (kg)</label>
         <input type="number" step="0.01" name="berat_badan" id="berat_badan" 
                class="form-control @error('berat_badan') is-invalid @enderror" 
-               value="{{ old('berat_badan', $healthRecord->berat_badan ?? '') }}" 
+               value="{{ old('berat_badan', $healthRecord?->berat_badan) }}" 
                placeholder="Contoh: 65.5">
         @error('berat_badan')
             <div class="invalid-feedback">{{ $message }}</div>
@@ -46,7 +53,7 @@
         <label for="tinggi_badan" class="form-label">Tinggi Badan (cm)</label>
         <input type="number" step="0.01" name="tinggi_badan" id="tinggi_badan" 
                class="form-control @error('tinggi_badan') is-invalid @enderror" 
-               value="{{ old('tinggi_badan', $healthRecord->tinggi_badan ?? '') }}" 
+               value="{{ old('tinggi_badan', $healthRecord?->tinggi_badan) }}" 
                placeholder="Contoh: 165">
         @error('tinggi_badan')
             <div class="invalid-feedback">{{ $message }}</div>
@@ -63,7 +70,7 @@
         <label for="tekanan_darah_sistolik" class="form-label">Tekanan Darah Sistolik (mmHg)</label>
         <input type="number" step="0.01" name="tekanan_darah_sistolik" id="tekanan_darah_sistolik" 
                class="form-control @error('tekanan_darah_sistolik') is-invalid @enderror" 
-               value="{{ old('tekanan_darah_sistolik', $healthRecord->tekanan_darah_sistolik ?? '') }}" 
+               value="{{ old('tekanan_darah_sistolik', $healthRecord?->tekanan_darah_sistolik) }}" 
                placeholder="Contoh: 120">
         @error('tekanan_darah_sistolik')
             <div class="invalid-feedback">{{ $message }}</div>
@@ -74,7 +81,7 @@
         <label for="tekanan_darah_diastolik" class="form-label">Tekanan Darah Diastolik (mmHg)</label>
         <input type="number" step="0.01" name="tekanan_darah_diastolik" id="tekanan_darah_diastolik" 
                class="form-control @error('tekanan_darah_diastolik') is-invalid @enderror" 
-               value="{{ old('tekanan_darah_diastolik', $healthRecord->tekanan_darah_diastolik ?? '') }}" 
+               value="{{ old('tekanan_darah_diastolik', $healthRecord?->tekanan_darah_diastolik) }}" 
                placeholder="Contoh: 80">
         @error('tekanan_darah_diastolik')
             <div class="invalid-feedback">{{ $message }}</div>
@@ -85,7 +92,7 @@
         <label for="gula_darah" class="form-label">Gula Darah (mg/dL)</label>
         <input type="number" step="0.01" name="gula_darah" id="gula_darah" 
                class="form-control @error('gula_darah') is-invalid @enderror" 
-               value="{{ old('gula_darah', $healthRecord->gula_darah ?? '') }}" 
+               value="{{ old('gula_darah', $healthRecord?->gula_darah) }}" 
                placeholder="Contoh: 100">
         @error('gula_darah')
             <div class="invalid-feedback">{{ $message }}</div>
@@ -96,7 +103,7 @@
         <label for="kolesterol" class="form-label">Kolesterol (mg/dL)</label>
         <input type="number" step="0.01" name="kolesterol" id="kolesterol" 
                class="form-control @error('kolesterol') is-invalid @enderror" 
-               value="{{ old('kolesterol', $healthRecord->kolesterol ?? '') }}" 
+               value="{{ old('kolesterol', $healthRecord?->kolesterol) }}" 
                placeholder="Contoh: 200">
         @error('kolesterol')
             <div class="invalid-feedback">{{ $message }}</div>
@@ -107,7 +114,7 @@
         <label for="asam_urat" class="form-label">Asam Urat (mg/dL)</label>
         <input type="number" step="0.01" name="asam_urat" id="asam_urat" 
                class="form-control @error('asam_urat') is-invalid @enderror" 
-               value="{{ old('asam_urat', $healthRecord->asam_urat ?? '') }}" 
+               value="{{ old('asam_urat', $healthRecord?->asam_urat) }}" 
                placeholder="Contoh: 6.5">
         @error('asam_urat')
             <div class="invalid-feedback">{{ $message }}</div>
@@ -125,7 +132,7 @@
         <label for="keluhan" class="form-label">Keluhan</label>
         <textarea name="keluhan" id="keluhan" rows="3" 
                   class="form-control @error('keluhan') is-invalid @enderror" 
-                  placeholder="Keluhan yang dirasakan pasien">{{ old('keluhan', $healthRecord->keluhan ?? '') }}</textarea>
+                  placeholder="Keluhan yang dirasakan pasien">{{ old('keluhan', $healthRecord?->keluhan) }}</textarea>
         @error('keluhan')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
@@ -135,7 +142,7 @@
         <label for="diagnosa" class="form-label">Diagnosa</label>
         <textarea name="diagnosa" id="diagnosa" rows="3" 
                   class="form-control @error('diagnosa') is-invalid @enderror" 
-                  placeholder="Diagnosa dari pemeriksaan">{{ old('diagnosa', $healthRecord->diagnosa ?? '') }}</textarea>
+                  placeholder="Diagnosa dari pemeriksaan">{{ old('diagnosa', $healthRecord?->diagnosa) }}</textarea>
         @error('diagnosa')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
@@ -145,7 +152,7 @@
         <label for="tindakan" class="form-label">Tindakan</label>
         <textarea name="tindakan" id="tindakan" rows="3" 
                   class="form-control @error('tindakan') is-invalid @enderror" 
-                  placeholder="Tindakan yang dilakukan">{{ old('tindakan', $healthRecord->tindakan ?? '') }}</textarea>
+                  placeholder="Tindakan yang dilakukan">{{ old('tindakan', $healthRecord?->tindakan) }}</textarea>
         @error('tindakan')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
@@ -155,7 +162,7 @@
         <label for="obat_diberikan" class="form-label">Obat yang Diberikan</label>
         <textarea name="obat_diberikan" id="obat_diberikan" rows="3" 
                   class="form-control @error('obat_diberikan') is-invalid @enderror" 
-                  placeholder="Daftar obat yang diberikan dan dosisnya">{{ old('obat_diberikan', $healthRecord->obat_diberikan ?? '') }}</textarea>
+                  placeholder="Daftar obat yang diberikan dan dosisnya">{{ old('obat_diberikan', $healthRecord?->obat_diberikan) }}</textarea>
         @error('obat_diberikan')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
@@ -165,7 +172,7 @@
         <label for="catatan" class="form-label">Catatan Tambahan</label>
         <textarea name="catatan" id="catatan" rows="3" 
                   class="form-control @error('catatan') is-invalid @enderror" 
-                  placeholder="Catatan tambahan dari pemeriksa">{{ old('catatan', $healthRecord->catatan ?? '') }}</textarea>
+                  placeholder="Catatan tambahan dari pemeriksa">{{ old('catatan', $healthRecord?->catatan) }}</textarea>
         @error('catatan')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror

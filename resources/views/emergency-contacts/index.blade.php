@@ -15,15 +15,17 @@
                            value="{{ request('search') }}" placeholder="Nama kontak, telepon...">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">Filter Lansia</label>
-                    <select name="lansia_id" class="form-select">
-                        <option value="">Semua Lansia</option>
-                        @foreach($lansiaList as $lansia)
-                            <option value="{{ $lansia->id }}" {{ request('lansia_id') == $lansia->id ? 'selected' : '' }}>
-                                {{ $lansia->nama }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <label class="form-label">Filter RW</label>
+                    <select name="rw" class="form-select">
+                    <option value="">Semua RW</option>
+
+                    @foreach($daftarRw as $rw)
+                        <option value="{{ $rw }}"
+                            {{ request('rw') == $rw ? 'selected' : '' }}>
+                            RW {{ $rw }}
+                        </option>
+                    @endforeach
+                </select>
                 </div>
                 <div class="col-md-3 d-flex gap-2">
                     <button type="submit" class="btn-accent flex-grow-1 justify-content-center">

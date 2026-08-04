@@ -21,14 +21,19 @@ class EmergencyContactController extends Controller
                   });
         }
 
-        if ($request->filled('lansia_id')) {
-            $query->where('lansia_id', $request->lansia_id);
+        if ($request->filled('rw')) {
+            $query->whereHas('lansia', function ($q) use ($request) {
+                $q->where('rw', $request->rw);
+            });
         }
 
         $contacts = $query->orderBy('is_primary', 'desc')->paginate(20);
-        $lansiaList = Lansia::orderBy('nama')->get();
+        $daftarRw = Lansia::select('rw')
+        ->distinct()
+        ->orderBy('rw')
+        ->pluck('rw');
 
-        return view('emergency-contacts.index', compact('contacts', 'lansiaList'));
+        return view('emergency-contacts.index', compact('contacts', 'daftarRw'));
     }
 
     public function create()

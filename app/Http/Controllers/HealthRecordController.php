@@ -21,8 +21,10 @@ class HealthRecordController extends Controller
             });
         }
 
-        if ($request->filled('lansia_id')) {
-            $query->where('lansia_id', $request->lansia_id);
+        if ($request->filled('rw')) {
+            $query->whereHas('lansia', function ($q) use ($request) {
+                $q->where('rw', $request->rw);
+            });
         }
 
         if ($request->filled('dari_tanggal')) {
@@ -34,16 +36,25 @@ class HealthRecordController extends Controller
         }
 
         $records = $query->orderBy('tanggal_pemeriksaan', 'desc')->paginate(15);
-        $lansiaList = Lansia::orderBy('nama')->get();
+        $daftarRw = Lansia::select('rw')
+        ->distinct()
+        ->orderBy('rw')
+        ->pluck('rw');
 
-        return view('health-records.index', compact('records', 'lansiaList'));
+    return view('health-records.index', compact('records', 'daftarRw'));
     }
 
     public function create()
     {
-        $lansiaList = Lansia::orderBy('nama')->get();
-        return view('health-records.create', compact('lansiaList'));
-    }
+    $lansiaList = Lansia::orderBy('nama')->get();
+
+    $healthRecord = null;
+
+    return view('health-records.create', compact(
+        'lansiaList',
+        'healthRecord'
+    ));
+}
 
     public function store(Request $request)
     {
