@@ -5,11 +5,6 @@
         @error('nama') <div class="invalid-feedback">{{ $message }}</div> @enderror
     </div>
     <div class="col-md-6">
-        <label for="nik" class="form-label">NIK <span class="text-danger">*</span></label>
-        <input type="text" class="form-control @error('nik') is-invalid @enderror" id="nik" name="nik" value="{{ old('nik', $lansia->nik ?? '') }}" maxlength="16" minlength="16" required>
-        @error('nik') <div class="invalid-feedback">{{ $message }}</div> @enderror
-    </div>
-    <div class="col-md-6">
         <label for="rw" class="form-label">RW <span class="text-danger">*</span></label>
         <input type="text" class="form-control @error('rw') is-invalid @enderror" id="rw" name="rw" value="{{ old('rw', $lansia->rw ?? '') }}" required>
         @error('rw') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -22,16 +17,6 @@
             <option value="Perempuan" {{ old('jenis_kelamin', $lansia->jenis_kelamin ?? '') == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
         </select>
         @error('jenis_kelamin') <div class="invalid-feedback">{{ $message }}</div> @enderror
-    </div>
-    <div class="col-md-6">
-        <label for="tanggal_lahir" class="form-label">Tanggal Lahir <span class="text-danger">*</span></label>
-        <input type="date" class="form-control @error('tanggal_lahir') is-invalid @enderror" id="tanggal_lahir" name="tanggal_lahir" value="{{ old('tanggal_lahir', isset($lansia) ? $lansia->tanggal_lahir->format('Y-m-d') : '') }}" required>
-        @error('tanggal_lahir') <div class="invalid-feedback">{{ $message }}</div> @enderror
-    </div>
-    <div class="col-md-6">
-        <label for="nomor_telepon" class="form-label">Nomor Telepon</label>
-        <input type="text" class="form-control @error('nomor_telepon') is-invalid @enderror" id="nomor_telepon" name="nomor_telepon" value="{{ old('nomor_telepon', $lansia->nomor_telepon ?? '') }}">
-        @error('nomor_telepon') <div class="invalid-feedback">{{ $message }}</div> @enderror
     </div>
     <div class="col-md-6">
         <label for="alamat" class="form-label">Alamat <span class="text-danger">*</span></label>

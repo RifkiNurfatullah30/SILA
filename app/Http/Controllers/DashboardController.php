@@ -77,7 +77,7 @@ class DashboardController extends Controller
 
             $kegiatanBulanIni = Kegiatan::whereYear('tanggal_kegiatan', $year)
                 ->whereMonth('tanggal_kegiatan', $m)
-                ->pluck('id');
+                ->get();
 
             if ($kegiatanBulanIni->isEmpty()) {
                 $data[] = 0;
@@ -90,19 +90,31 @@ class DashboardController extends Controller
                 $lansiaQuery->where('rw', $rw);
             }
 
-            $totalLansia = $lansiaQuery->count();
-            $lansiaIds = $lansiaQuery->pluck('id');
+            $lansias = $lansiaQuery->get();
+            $totalLansia = $lansias->count();
+            
             if ($totalLansia === 0) {
                 $data[] = 0;
                 continue;
             }
 
-            $totalHadir = Kehadiran::whereIn('kegiatan_id', $kegiatanBulanIni)
-                ->whereIn('lansia_id', $lansiaIds)
+            $maxHadir = 0;
+            $kegiatanIds = [];
+            foreach ($kegiatanBulanIni as $keg) {
+                $kegiatanIds[] = $keg->id;
+                $kegRws = $keg->rw_array;
+                
+                foreach ($lansias as $l) {
+                    if (empty($kegRws) || in_array($l->rw, $kegRws)) {
+                        $maxHadir++;
+                    }
+                }
+            }
+
+            $totalHadir = Kehadiran::whereIn('kegiatan_id', $kegiatanIds)
+                ->whereIn('lansia_id', $lansias->pluck('id'))
                 ->where('status', 'Hadir')
                 ->count();
-
-            $maxHadir = $totalLansia * $kegiatanBulanIni->count();
             $data[] = $maxHadir > 0 ? round(($totalHadir / $maxHadir) * 100, 2) : 0;
         }
 

@@ -19,7 +19,7 @@
             <div class="col-md-8">
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" name="search" class="form-control" placeholder="Cari nama, NIK, atau alamat..." value="{{ request('search') }}">
+                    <input type="text" name="search" class="form-control" placeholder="Cari nama atau alamat..." value="{{ request('search') }}">
                 </div>
             </div>
             <div class="col-md-3">
@@ -48,10 +48,9 @@
                     <tr>
                         <th>No</th>
                         <th>Nama</th>
-                        <th>NIK</th>
                         <th>RW</th>
                         <th>Jenis Kelamin</th>
-                        <th>Usia</th>
+                        <th>Alamat</th>
                         <th>Keaktifan</th>
                         <th class="text-end">Aksi</th>
                     </tr>
@@ -61,10 +60,9 @@
                         <tr style="animation: cardSlideUp 0.4s cubic-bezier(.4,0,.2,1) {{ ($i * 0.04) }}s both;">
                             <td>{{ $lansias->firstItem() + $i }}</td>
                             <td class="fw-semibold">{{ $lansia->nama }}</td>
-                            <td><span class="nik-mono">{{ $lansia->nik }}</span></td>
                             <td>{{ $lansia->rw }}</td>
                             <td>{{ $lansia->jenis_kelamin }}</td>
-                            <td>{{ $lansia->usia }} th</td>
+                            <td>{{ Str::limit($lansia->alamat, 30) }}</td>
                             <td>
                                 <span class="badge-glass badge-{{ $lansia->badge_keaktifan === 'success' ? 'success' : ($lansia->badge_keaktifan === 'primary' ? 'primary' : ($lansia->badge_keaktifan === 'warning' ? 'warning' : 'danger')) }}-glow">
                                     {{ $lansia->persentase_keaktifan }}% &middot; {{ $lansia->kategori_keaktifan }}
@@ -83,7 +81,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7">
+                            <td colspan="8">
                                 <div class="empty-state">
                                     <i class="bi bi-people"></i>
                                     <p>Belum ada data lansia</p>

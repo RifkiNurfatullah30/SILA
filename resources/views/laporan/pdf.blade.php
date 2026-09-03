@@ -88,10 +88,8 @@
             <tr>
                 <th class="text-center">No</th>
                 <th>Nama</th>
-                <th>NIK</th>
                 <th>RW</th>
                 <th>JK</th>
-                <th class="text-center">Usia</th>
                 <th class="text-center">Kegiatan</th>
                 <th class="text-center">Hadir</th>
                 <th class="text-center">Persentase</th>
@@ -103,11 +101,9 @@
                 <tr>
                     <td class="text-center">{{ $i + 1 }}</td>
                     <td>{{ $lansia->nama }}</td>
-                    <td>{{ $lansia->nik }}</td>
                     <td>{{ $lansia->rw }}</td>
                     <td>{{ $lansia->jenis_kelamin === 'Laki-laki' ? 'L' : 'P' }}</td>
-                    <td class="text-center">{{ $lansia->usia }}</td>
-                    <td class="text-center">{{ $totalKegiatanBulan }}</td>
+                    <td class="text-center">{{ $lansia->total_kegiatan_valid_bulan }}</td>
                     <td class="text-center">{{ $lansia->total_hadir_bulan }}</td>
                     <td class="text-center">{{ $lansia->persentase_bulan }}%</td>
                     <td class="text-center">

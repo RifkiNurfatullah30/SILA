@@ -24,6 +24,7 @@
                 <table class="table table-borderless mb-0 text-start" style="font-size:0.85rem;">
                     <tr><td style="color:var(--text-muted);width:100px;">Tanggal</td><td class="fw-semibold">{{ $kegiatan->tanggal_kegiatan->translatedFormat('d F Y') }}</td></tr>
                     <tr><td style="color:var(--text-muted);">Lokasi</td><td class="fw-semibold">{{ $kegiatan->lokasi }}</td></tr>
+                    <tr><td style="color:var(--text-muted);">Sasaran RW</td><td class="fw-semibold">{{ $kegiatan->rw_label }}</td></tr>
                     <tr><td style="color:var(--text-muted);">Keterangan</td><td class="fw-semibold">{{ $kegiatan->keterangan ?? '-' }}</td></tr>
                 </table>
             </div>

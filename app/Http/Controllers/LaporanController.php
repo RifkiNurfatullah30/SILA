@@ -83,16 +83,15 @@ class LaporanController extends Controller
 
             fputcsv($file, ["Laporan Keaktifan Lansia - {$namaBulan} {$tahun}"]);
             fputcsv($file, []);
-            fputcsv($file, ['No', 'Nama', 'NIK', 'Jenis Kelamin', 'Usia', 'Total Kegiatan', 'Total Hadir', 'Persentase (%)', 'Kategori']);
+            fputcsv($file, ['No', 'Nama', 'Jenis Kelamin', 'RW', 'Total Kegiatan', 'Total Hadir', 'Persentase (%)', 'Kategori']);
 
             foreach ($data['lansias'] as $i => $lansia) {
                 fputcsv($file, [
                     $i + 1,
                     $lansia->nama,
-                    "'" . $lansia->nik,
                     $lansia->jenis_kelamin,
-                    $lansia->usia,
-                    $data['totalKegiatanBulan'],
+                    'RW ' . $lansia->rw,
+                    $lansia->total_kegiatan_valid_bulan,
                     $lansia->total_hadir_bulan,
                     $lansia->persentase_bulan,
                     $lansia->kategori_bulan,
@@ -107,11 +106,12 @@ class LaporanController extends Controller
 
     private function getLaporanData(int $bulan, int $tahun, $rw = null): array
     {
-        $kegiatanIds = Kegiatan::whereYear('tanggal_kegiatan', $tahun)
+        $kegiatans = Kegiatan::with('rwList')
+            ->whereYear('tanggal_kegiatan', $tahun)
             ->whereMonth('tanggal_kegiatan', $bulan)
-            ->pluck('id');
-
-        $totalKegiatanBulan = $kegiatanIds->count();
+            ->get();
+            
+        $kegiatanIds = $kegiatans->pluck('id');
 
         $query = Lansia::orderBy('nama');
 
@@ -122,14 +122,23 @@ class LaporanController extends Controller
         $lansias = $query->get();
 
         foreach ($lansias as $lansia) {
+            $totalKegiatanValid = 0;
+            foreach ($kegiatans as $keg) {
+                $kegRws = $keg->rw_array;
+                if (empty($kegRws) || in_array($lansia->rw, $kegRws)) {
+                    $totalKegiatanValid++;
+                }
+            }
+
             $totalHadir = Kehadiran::where('lansia_id', $lansia->id)
                 ->whereIn('kegiatan_id', $kegiatanIds)
                 ->where('status', 'Hadir')
                 ->count();
 
             $lansia->total_hadir_bulan = $totalHadir;
-            $lansia->persentase_bulan = $totalKegiatanBulan > 0
-                ? round(($totalHadir / $totalKegiatanBulan) * 100, 2)
+            $lansia->total_kegiatan_valid_bulan = $totalKegiatanValid;
+            $lansia->persentase_bulan = $totalKegiatanValid > 0
+                ? round(($totalHadir / $totalKegiatanValid) * 100, 2)
                 : 0;
             $lansia->kategori_bulan = match (true) {
                 $lansia->persentase_bulan >= 80 => 'Sangat Aktif',
@@ -147,7 +156,7 @@ class LaporanController extends Controller
 
         return [
             'lansias' => $lansias,
-            'totalKegiatanBulan' => $totalKegiatanBulan,
+            'totalKegiatanBulan' => $kegiatans->count(),
         ];
     }
 

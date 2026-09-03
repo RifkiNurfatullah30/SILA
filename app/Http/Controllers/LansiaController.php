@@ -15,7 +15,6 @@ class LansiaController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
-                  ->orWhere('nik', 'like', "%{$search}%")
                   ->orWhere('alamat', 'like', "%{$search}%");
             });
         }
@@ -43,12 +42,9 @@ class LansiaController extends Controller
     {
         $validated = $request->validate([
             'nama' => ['required', 'string', 'max:255'],
-            'nik' => ['required', 'string', 'size:16', 'unique:lansias,nik'],
             'rw' => ['required', 'string', 'max:255'],
             'jenis_kelamin' => ['required', 'in:Laki-laki,Perempuan'],
-            'tanggal_lahir' => ['required', 'date', 'before:today'],
             'alamat' => ['required', 'string'],
-            'nomor_telepon' => ['nullable', 'string', 'max:20'],
         ]);
 
         Lansia::create($validated);
@@ -72,12 +68,9 @@ class LansiaController extends Controller
     {
         $validated = $request->validate([
             'nama' => ['required', 'string', 'max:255'],
-            'nik' => ['required', 'string', 'size:16', 'unique:lansias,nik,' . $lansia->id],
             'rw' => ['required', 'string', 'max:255'],
             'jenis_kelamin' => ['required', 'in:Laki-laki,Perempuan'],
-            'tanggal_lahir' => ['required', 'date', 'before:today'],
             'alamat' => ['required', 'string'],
-            'nomor_telepon' => ['nullable', 'string', 'max:20'],
         ]);
 
         $lansia->update($validated);

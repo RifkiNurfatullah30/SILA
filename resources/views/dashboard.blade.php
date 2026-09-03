@@ -111,7 +111,7 @@
                     <tr>
                         <th>Peringkat</th>
                         <th>Nama Lansia</th>
-                        <th>Usia</th>
+                        <th>RW</th>
                         <th class="text-end">Keaktifan</th>
                     </tr>
                 </thead>
@@ -126,7 +126,7 @@
                                 @endif
                             </td>
                             <td class="fw-bold">{{ $lansia->nama }}</td>
-                            <td>{{ $lansia->usia }} th</td>
+                            <td>RW {{ $lansia->rw }}</td>
                             <td class="text-end">
                                 <span class="badge-glass badge-success-glow fw-bold fs-6">
                                     {{ $lansia->persentase_keaktifan }}%

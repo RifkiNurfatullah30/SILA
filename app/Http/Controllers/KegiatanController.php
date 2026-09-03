@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kegiatan;
+use App\Models\Lansia;
 use Illuminate\Http\Request;
 
 class KegiatanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Kegiatan::query();
+        $query = Kegiatan::with('rwList');
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -19,14 +20,24 @@ class KegiatanController extends Controller
             });
         }
 
-        $kegiatans = $query->orderBy('tanggal_kegiatan', 'desc')->paginate(10)->withQueryString();
+        if ($request->filled('rw')) {
+            $rw = $request->rw;
+            $query->whereHas('rwList', function($q) use ($rw) {
+                $q->where('rw', $rw);
+            });
+        }
 
-        return view('kegiatan.index', compact('kegiatans'));
+        $kegiatans = $query->orderBy('tanggal_kegiatan', 'desc')->paginate(10)->withQueryString();
+        
+        $daftarRw = Lansia::select('rw')->distinct()->orderBy('rw')->pluck('rw');
+
+        return view('kegiatan.index', compact('kegiatans', 'daftarRw'));
     }
 
     public function create()
     {
-        return view('kegiatan.create');
+        $daftarRw = Lansia::select('rw')->distinct()->orderBy('rw')->pluck('rw');
+        return view('kegiatan.create', compact('daftarRw'));
     }
 
     public function store(Request $request)
@@ -36,9 +47,22 @@ class KegiatanController extends Controller
             'tanggal_kegiatan' => ['required', 'date'],
             'lokasi' => ['required', 'string', 'max:255'],
             'keterangan' => ['nullable', 'string'],
+            'rws' => ['nullable', 'array'],
+            'rws.*' => ['string'],
         ]);
 
-        Kegiatan::create($validated);
+        $kegiatan = Kegiatan::create([
+            'nama_kegiatan' => $validated['nama_kegiatan'],
+            'tanggal_kegiatan' => $validated['tanggal_kegiatan'],
+            'lokasi' => $validated['lokasi'],
+            'keterangan' => $validated['keterangan'] ?? null,
+        ]);
+
+        if (!empty($validated['rws'])) {
+            foreach ($validated['rws'] as $rw) {
+                $kegiatan->rwList()->create(['rw' => $rw]);
+            }
+        }
 
         return redirect()->route('kegiatan.index')
             ->with('success', 'Data kegiatan berhasil ditambahkan.');
@@ -46,13 +70,15 @@ class KegiatanController extends Controller
 
     public function show(Kegiatan $kegiatan)
     {
-        $kegiatan->load('kehadirans.lansia');
+        $kegiatan->load(['kehadirans.lansia', 'rwList']);
         return view('kegiatan.show', compact('kegiatan'));
     }
 
     public function edit(Kegiatan $kegiatan)
     {
-        return view('kegiatan.edit', compact('kegiatan'));
+        $kegiatan->load('rwList');
+        $daftarRw = Lansia::select('rw')->distinct()->orderBy('rw')->pluck('rw');
+        return view('kegiatan.edit', compact('kegiatan', 'daftarRw'));
     }
 
     public function update(Request $request, Kegiatan $kegiatan)
@@ -62,9 +88,23 @@ class KegiatanController extends Controller
             'tanggal_kegiatan' => ['required', 'date'],
             'lokasi' => ['required', 'string', 'max:255'],
             'keterangan' => ['nullable', 'string'],
+            'rws' => ['nullable', 'array'],
+            'rws.*' => ['string'],
         ]);
 
-        $kegiatan->update($validated);
+        $kegiatan->update([
+            'nama_kegiatan' => $validated['nama_kegiatan'],
+            'tanggal_kegiatan' => $validated['tanggal_kegiatan'],
+            'lokasi' => $validated['lokasi'],
+            'keterangan' => $validated['keterangan'] ?? null,
+        ]);
+
+        $kegiatan->rwList()->delete();
+        if (!empty($validated['rws'])) {
+            foreach ($validated['rws'] as $rw) {
+                $kegiatan->rwList()->create(['rw' => $rw]);
+            }
+        }
 
         return redirect()->route('kegiatan.index')
             ->with('success', 'Data kegiatan berhasil diperbarui.');

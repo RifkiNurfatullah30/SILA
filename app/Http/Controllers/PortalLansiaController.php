@@ -23,8 +23,14 @@ class PortalLansiaController extends Controller
         $kategoriKeaktifan = $lansia->kategori_keaktifan;
         $badgeKeaktifan = $lansia->badge_keaktifan;
 
-        // Kegiatan mendatang (besok dan seterusnya)
+        // Kegiatan mendatang (besok dan seterusnya) untuk lansia ini
         $kegiatanMendatang = Kegiatan::where('tanggal_kegiatan', '>=', today())
+            ->where(function ($q) use ($lansia) {
+                $q->whereDoesntHave('rwList')
+                  ->orWhereHas('rwList', function ($sq) use ($lansia) {
+                      $sq->where('rw', $lansia->rw);
+                  });
+            })
             ->orderBy('tanggal_kegiatan', 'asc')
             ->take(5)
             ->get();
@@ -39,7 +45,12 @@ class PortalLansiaController extends Controller
             ->get();
 
         // Data chart kehadiran
-        $totalKegiatan = Kegiatan::count();
+        $totalKegiatan = Kegiatan::where(function ($q) use ($lansia) {
+            $q->whereDoesntHave('rwList')
+              ->orWhereHas('rwList', function ($sq) use ($lansia) {
+                  $sq->where('rw', $lansia->rw);
+              });
+        })->count();
         $totalTidakHadir = $totalKegiatan - $totalKehadiran;
         $chartKehadiran = [
             'labels' => ['Hadir', 'Tidak Hadir'],

@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\EmergencyContactController;
 use App\Http\Controllers\HealthRecordController;
 use App\Http\Controllers\KehadiranController;
 use App\Http\Controllers\KegiatanController;
@@ -24,7 +23,6 @@ Route::middleware('auth')->group(function () {
         Route::resource('lansia', LansiaController::class)->parameters(['lansia' => 'lansia']);
         Route::resource('kegiatan', KegiatanController::class);
         Route::resource('health-records', HealthRecordController::class);
-        Route::resource('emergency-contacts', EmergencyContactController::class);
 
         Route::get('/kehadiran', [KehadiranController::class, 'index'])->name('kehadiran.index');
         Route::post('/kehadiran', [KehadiranController::class, 'store'])->name('kehadiran.store');

@@ -52,14 +52,21 @@ class Lansia extends Model
         return $this->hasOne(HealthRecord::class)->latestOfMany('tanggal_pemeriksaan');
     }
 
-    public function getUsiaAttribute(): int
+    public function getUsiaAttribute(): ?int
     {
-        return $this->tanggal_lahir->age;
+        return $this->tanggal_lahir ? $this->tanggal_lahir->age : null;
     }
 
     public function getPersentaseKeaktifanAttribute(): float
     {
-        $totalKegiatan = Kegiatan::count();
+        // Hitung total kegiatan yang ditujukan untuk RW lansia ini ATAU untuk semua RW
+        $totalKegiatan = Kegiatan::where(function ($q) {
+            $q->whereDoesntHave('rwList') // Semua RW
+              ->orWhereHas('rwList', function ($sq) {
+                  $sq->where('rw', $this->rw); // Khusus RW ini
+              });
+        })->count();
+        
         if ($totalKegiatan === 0) return 0;
 
         $totalHadir = $this->kehadirans()->where('status', 'Hadir')->count();

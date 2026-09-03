@@ -22,11 +22,23 @@ class KehadiranController extends Controller
                 ->pluck('rw');
 
         if ($request->filled('kegiatan_id')) {
-            $selectedKegiatan = Kegiatan::findOrFail($request->kegiatan_id);
+            $selectedKegiatan = Kegiatan::with('rwList')->findOrFail($request->kegiatan_id);
             $query = Lansia::query();
 
+            // Jika kegiatan ini punya target RW khusus, batasi hanya RW tersebut
+            $targetedRws = $selectedKegiatan->rw_array;
+            if (!empty($targetedRws)) {
+                $query->whereIn('rw', $targetedRws);
+            }
+
             if ($request->filled('rw')) {
-                $query->where('rw', $request->rw);
+                // Pastikan filter dropdown tidak keluar dari target RW kegiatan
+                if (empty($targetedRws) || in_array($request->rw, $targetedRws)) {
+                    $query->where('rw', $request->rw);
+                } else {
+                    // Filter RW tidak valid (di luar target kegiatan), return kosong
+                    $query->where('id', 0);
+                }
             }
 
             $lansias = $query->orderBy('nama')->get();

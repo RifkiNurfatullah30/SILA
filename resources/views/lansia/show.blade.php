@@ -21,7 +21,7 @@
                     <i class="bi bi-person-fill text-white fs-2"></i>
                 </div>
                 <h5 class="fw-bold mb-1" style="color:var(--text-primary);">{{ $lansia->nama }}</h5>
-                <p style="color:var(--text-muted);font-size:0.85rem;" class="mb-3">{{ $lansia->usia }} tahun</p>
+                <p style="color:var(--text-muted);font-size:0.85rem;" class="mb-3">RW {{ $lansia->rw }}</p>
                 <span class="badge-glass badge-{{ $lansia->badge_keaktifan === 'success' ? 'success' : ($lansia->badge_keaktifan === 'primary' ? 'primary' : ($lansia->badge_keaktifan === 'warning' ? 'warning' : 'danger')) }}-glow" style="font-size:0.85rem;padding:0.5rem 1rem;">
                     {{ $lansia->persentase_keaktifan }}% &middot; {{ $lansia->kategori_keaktifan }}
                 </span>
@@ -35,71 +35,14 @@
             </div>
             <div class="card-body p-4">
                 <table class="table table-borderless mb-0">
-                    <tr><td style="width:160px;color:var(--text-muted);font-size:0.85rem;">NIK</td><td class="fw-semibold"><span class="nik-mono">{{ $lansia->nik }}</span></td></tr>
                     <tr><td style="width:160px;color:var(--text-muted);font-size:0.85rem;">RW</td><td class="fw-semibold">{{ $lansia->rw }}</td></tr>
                     <tr><td style="color:var(--text-muted);font-size:0.85rem;">Jenis Kelamin</td><td class="fw-semibold">{{ $lansia->jenis_kelamin }}</td></tr>
-                    <tr><td style="color:var(--text-muted);font-size:0.85rem;">Tanggal Lahir</td><td class="fw-semibold">{{ $lansia->tanggal_lahir->translatedFormat('d F Y') }}</td></tr>
                     <tr><td style="color:var(--text-muted);font-size:0.85rem;">Alamat</td><td class="fw-semibold">{{ $lansia->alamat }}</td></tr>
-                    <tr><td style="color:var(--text-muted);font-size:0.85rem;">Nomor Telepon</td><td class="fw-semibold">{{ $lansia->nomor_telepon ?? '-' }}</td></tr>
                 </table>
             </div>
         </div>
 
         <div class="glass-card stagger-3 mb-4">
-            <div class="card-header glass-header d-flex justify-content-between align-items-center">
-                <h6><i class="bi bi-person-lines-fill me-2" style="color:#8b5cf6;"></i>Kontak Darurat</h6>
-                <a href="{{ route('emergency-contacts.create', ['lansia_id' => $lansia->id]) }}" class="btn-glass btn-sm">
-                    <i class="bi bi-plus-circle me-1"></i> Tambah Kontak
-                </a>
-            </div>
-            <div class="card-body p-4">
-                @if($lansia->emergencyContacts->count() > 0)
-                    <div class="row g-3">
-                        @foreach($lansia->emergencyContacts as $contact)
-                        <div class="col-md-6">
-                            <div class="p-3" style="background: var(--input-bg); border: 1px solid var(--border); border-radius: 12px;">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <div>
-                                        <div class="fw-bold" style="color: var(--text-primary);">{{ $contact->nama_kontak }}</div>
-                                        <small class="badge-glass badge-primary-glow">{{ $contact->hubungan_label }}</small>
-                                    </div>
-                                    @if($contact->is_primary)
-                                        <span class="badge-glass badge-success-glow">
-                                            <i class="bi bi-star-fill me-1"></i> Utama
-                                        </span>
-                                    @endif
-                                </div>
-                                <div class="mt-2">
-                                    <div class="d-flex align-items-center gap-2 mb-1">
-                                        <i class="bi bi-telephone" style="color: var(--accent2);"></i>
-                                        <a href="tel:{{ $contact->nomor_telepon }}" style="color: var(--text-primary); text-decoration: none;">
-                                            {{ $contact->nomor_telepon }}
-                                        </a>
-                                    </div>
-                                    @if($contact->alamat)
-                                        <div class="d-flex align-items-start gap-2">
-                                            <i class="bi bi-geo-alt" style="color: var(--text-muted);"></i>
-                                            <small style="color: var(--text-muted);">{{ $contact->alamat }}</small>
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="text-center py-4">
-                        <i class="bi bi-person-lines-fill" style="font-size: 2rem; opacity: 0.3;"></i>
-                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.5rem;">
-                            Belum ada kontak darurat. 
-                            <a href="{{ route('emergency-contacts.create', ['lansia_id' => $lansia->id]) }}" style="color: var(--accent);">Tambah sekarang</a>
-                        </p>
-                    </div>
-                @endif
-            </div>
-        </div>
-
-        <div class="glass-card stagger-4 mb-4">
             <div class="card-header glass-header d-flex justify-content-between align-items-center">
                 <h6><i class="bi bi-heart-pulse me-2" style="color:#ef4444;"></i>Rekam Kesehatan Terbaru</h6>
                 <a href="{{ route('health-records.create', ['lansia_id' => $lansia->id]) }}" class="btn-glass btn-sm">
@@ -194,7 +137,7 @@
             </div>
         </div>
 
-        <div class="glass-card stagger-5">
+        <div class="glass-card stagger-4">
             <div class="card-header glass-header">
                 <h6><i class="bi bi-clock-history me-2" style="color:var(--accent);"></i>Riwayat Kehadiran</h6>
             </div>

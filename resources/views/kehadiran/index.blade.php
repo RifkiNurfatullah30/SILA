@@ -60,7 +60,7 @@
                         <tr>
                             <th>No</th>
                             <th>Nama Lansia</th>
-                            <th>NIK</th>
+                            <th>RW</th>
                             <th>Status Kehadiran</th>
                         </tr>
                     </thead>
@@ -69,7 +69,7 @@
                             <tr style="animation: cardSlideUp 0.4s cubic-bezier(.4,0,.2,1) {{ ($i * 0.03) }}s both;">
                                 <td>{{ $i + 1 }}</td>
                                 <td class="fw-semibold">{{ $lansia->nama }}</td>
-                                <td><span class="nik-mono">{{ $lansia->nik }}</span></td>
+                                <td>RW {{ $lansia->rw }}</td>
                                 <td>
                                     <div class="btn-group" role="group">
                                         <input type="radio" class="btn-check" name="kehadiran[{{ $lansia->id }}]" id="hadir_{{ $lansia->id }}" value="Hadir" {{ ($kehadiranMap[$lansia->id] ?? '') === 'Hadir' ? 'checked' : '' }}>

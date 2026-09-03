@@ -27,7 +27,7 @@
                     <div>
                         <div class="stat-label">Nama Lansia</div>
                         <h5 class="mb-0" style="color: var(--text-primary);">{{ $healthRecord->lansia->nama }}</h5>
-                        <small class="nik-mono">{{ $healthRecord->lansia->nik }}</small>
+                        <small style="color: var(--text-muted);">RW {{ $healthRecord->lansia->rw }}</small>
                     </div>
                 </div>
             </div>

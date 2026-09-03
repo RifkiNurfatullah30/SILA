@@ -465,11 +465,6 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('emergency-contacts.*') ? 'active' : '' }}" href="{{ route('emergency-contacts.index') }}">
-                            <i class="bi bi-person-lines-fill"></i> <span>Kontak Darurat</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('kegiatan.*') ? 'active' : '' }}" href="{{ route('kegiatan.index') }}">
                             <i class="bi bi-calendar-event-fill"></i> <span>Kegiatan</span>
                         </a>

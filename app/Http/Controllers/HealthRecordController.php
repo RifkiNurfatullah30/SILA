@@ -16,8 +16,7 @@ class HealthRecordController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('lansia', function($q) use ($search) {
-                $q->where('nama', 'like', "%{$search}%")
-                  ->orWhere('nik', 'like', "%{$search}%");
+                $q->where('nama', 'like', "%{$search}%");
             });
         }
 

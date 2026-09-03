@@ -12,7 +12,7 @@
                 <div class="col-md-4">
                     <label class="form-label">Cari Lansia</label>
                     <input type="text" name="search" class="form-control" 
-                           value="{{ request('search') }}" placeholder="Nama atau NIK...">
+                           value="{{ request('search') }}" placeholder="Nama lansia...">
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Filter RW</label>
@@ -80,7 +80,7 @@
                         <div class="fw-semibold" style="color: var(--text-primary);">
                             {{ $record->lansia->nama }}
                         </div>
-                        <div class="nik-mono">{{ $record->lansia->nik }}</div>
+                        <small style="color: var(--text-muted);">RW {{ $record->lansia->rw }}</small>
                     </td>
                     <td>
                         <div style="color: var(--text-primary);">

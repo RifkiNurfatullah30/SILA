@@ -34,10 +34,10 @@
 
                     <option value="">Semua RW</option>
 
-                    @foreach($daftarRw as $rw)
-                        <option value="{{ $rw }}"
-                            {{ request('rw') == $rw ? 'selected' : '' }}>
-                            RW {{ $rw }}
+                    @foreach($daftarRw as $rwItem)
+                        <option value="{{ $rwItem }}"
+                            {{ request('rw') == $rwItem ? 'selected' : '' }}>
+                            RW {{ $rwItem }}
                         </option>
                     @endforeach
 
@@ -71,9 +71,8 @@
                     <tr>
                         <th>No</th>
                         <th>Nama</th>
-                        <th>NIK</th>
                         <th>JK</th>
-                        <th>Usia</th>
+                        <th>RW</th>
                         <th class="text-center">Kegiatan</th>
                         <th class="text-center">Hadir</th>
                         <th class="text-center">Persentase</th>
@@ -85,10 +84,9 @@
                         <tr style="animation: cardSlideUp 0.4s cubic-bezier(.4,0,.2,1) {{ ($i * 0.04) }}s both;">
                             <td>{{ $i + 1 }}</td>
                             <td class="fw-semibold">{{ $lansia->nama }}</td>
-                            <td><span class="nik-mono">{{ $lansia->nik }}</span></td>
                             <td>{{ $lansia->jenis_kelamin }}</td>
-                            <td>{{ $lansia->usia }} th</td>
-                            <td class="text-center">{{ $totalKegiatanBulan }}</td>
+                            <td>RW {{ $lansia->rw }}</td>
+                            <td class="text-center">{{ $lansia->total_kegiatan_valid_bulan }}</td>
                             <td class="text-center fw-bold">{{ $lansia->total_hadir_bulan }}</td>
                             <td class="text-center fw-bold" style="color:var(--accent);">{{ $lansia->persentase_bulan }}%</td>
                             <td>

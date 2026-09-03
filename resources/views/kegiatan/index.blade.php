@@ -16,15 +16,25 @@
 <div class="glass-card stagger-1">
     <div class="card-body p-4">
         <form method="GET" action="{{ route('kegiatan.index') }}" class="row g-3 mb-4">
-            <div class="col-md-8">
+            <div class="col-md-6">
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
                     <input type="text" name="search" class="form-control" placeholder="Cari kegiatan atau lokasi..." value="{{ request('search') }}">
                 </div>
             </div>
-            <div class="col-md-4 d-flex gap-2">
+            <div class="col-md-3">
+                <select name="rw" class="form-select">
+                    <option value="">Semua RW</option>
+                    @foreach($daftarRw as $rw)
+                        <option value="{{ $rw }}" {{ request('rw') == $rw ? 'selected' : '' }}>
+                            RW {{ $rw }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
                 <button type="submit" class="btn-accent ripple-btn">Cari</button>
-                @if(request('search'))
+                @if(request('search') || request('rw'))
                     <a href="{{ route('kegiatan.index') }}" class="btn-glass">Reset</a>
                 @endif
             </div>
@@ -38,6 +48,7 @@
                         <th>Nama Kegiatan</th>
                         <th>Tanggal</th>
                         <th>Lokasi</th>
+                        <th>Sasaran RW</th>
                         <th>Peserta</th>
                         <th class="text-end">Aksi</th>
                     </tr>
@@ -49,6 +60,11 @@
                             <td class="fw-semibold">{{ $kegiatan->nama_kegiatan }}</td>
                             <td>{{ $kegiatan->tanggal_kegiatan->translatedFormat('d M Y') }}</td>
                             <td style="color:var(--text-secondary);">{{ $kegiatan->lokasi }}</td>
+                            <td>
+                                <span class="badge-glass badge-primary-glow" style="white-space:normal;max-width:150px;display:inline-block;">
+                                    {{ $kegiatan->rw_label }}
+                                </span>
+                            </td>
                             <td>
                                 <span class="badge-glass badge-success-glow">{{ $kegiatan->kehadirans()->where('status', 'Hadir')->count() }} hadir</span>
                             </td>
@@ -65,7 +81,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6">
+                            <td colspan="7">
                                 <div class="empty-state">
                                     <i class="bi bi-calendar-event"></i>
                                     <p>Belum ada data kegiatan</p>
