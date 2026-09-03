@@ -16,25 +16,37 @@
 <div class="glass-card stagger-1">
     <div class="card-body p-4">
         <form method="GET" action="{{ route('kegiatan.index') }}" class="row g-3 mb-4">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
                     <input type="text" name="search" class="form-control" placeholder="Cari kegiatan atau lokasi..." value="{{ request('search') }}">
                 </div>
             </div>
-            <div class="col-md-3">
-                <select name="rw" class="form-select">
-                    <option value="">Semua RW</option>
-                    @foreach($daftarRw as $rw)
-                        <option value="{{ $rw }}" {{ request('rw') == $rw ? 'selected' : '' }}>
-                            RW {{ $rw }}
+            <div class="col-md-2">
+                <select name="kampung" class="form-select" id="keg_filter_kampung">
+                    <option value="">Semua Kampung</option>
+                    @foreach($kampungList as $k)
+                        <option value="{{ $k }}" {{ request('kampung') == $k ? 'selected' : '' }}>
+                            {{ $k }}
                         </option>
                     @endforeach
                 </select>
             </div>
+            <div class="col-md-3">
+                <select name="rw" class="form-select" id="keg_filter_rw" {{ request('kampung') ? '' : 'disabled' }}>
+                    <option value="">Semua RW</option>
+                    @if(request('kampung') && isset($groupedRw[request('kampung')]))
+                        @foreach($groupedRw[request('kampung')] as $rw)
+                            <option value="{{ $rw }}" {{ request('rw') == $rw ? 'selected' : '' }}>
+                                RW {{ $rw }}
+                            </option>
+                        @endforeach
+                    @endif
+                </select>
+            </div>
             <div class="col-md-3 d-flex gap-2">
                 <button type="submit" class="btn-accent ripple-btn">Cari</button>
-                @if(request('search') || request('rw'))
+                @if(request('search') || request('rw') || request('kampung'))
                     <a href="{{ route('kegiatan.index') }}" class="btn-glass">Reset</a>
                 @endif
             </div>
@@ -97,3 +109,31 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const kampungSelect = document.getElementById('keg_filter_kampung');
+    const rwSelect = document.getElementById('keg_filter_rw');
+    const groupedRw = @json($groupedRw);
+
+    kampungSelect.addEventListener('change', function() {
+        const kampung = this.value;
+        rwSelect.innerHTML = '<option value="">Semua RW</option>';
+
+        if (kampung) {
+            rwSelect.disabled = false;
+            const rwList = groupedRw[kampung] || [];
+            rwList.forEach(rw => {
+                const opt = document.createElement('option');
+                opt.value = rw;
+                opt.textContent = 'RW ' + rw;
+                rwSelect.appendChild(opt);
+            });
+        } else {
+            rwSelect.disabled = true;
+        }
+    });
+});
+</script>
+@endpush

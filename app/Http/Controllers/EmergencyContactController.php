@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\KampungHelper;
 use App\Models\EmergencyContact;
 use App\Models\Lansia;
 use Illuminate\Http\Request;
@@ -21,6 +22,13 @@ class EmergencyContactController extends Controller
                   });
         }
 
+        if ($request->filled('kampung')) {
+            $rwsForKampung = KampungHelper::getRwByKampung($request->kampung);
+            $query->whereHas('lansia', function ($q) use ($rwsForKampung) {
+                $q->whereIn('rw', $rwsForKampung);
+            });
+        }
+
         if ($request->filled('rw')) {
             $query->whereHas('lansia', function ($q) use ($request) {
                 $q->where('rw', $request->rw);
@@ -28,12 +36,10 @@ class EmergencyContactController extends Controller
         }
 
         $contacts = $query->orderBy('is_primary', 'desc')->paginate(20);
-        $daftarRw = Lansia::select('rw')
-        ->distinct()
-        ->orderBy('rw')
-        ->pluck('rw');
+        $kampungList = KampungHelper::getKampungList();
+        $groupedRw = KampungHelper::getGroupedRw();
 
-        return view('emergency-contacts.index', compact('contacts', 'daftarRw'));
+        return view('emergency-contacts.index', compact('contacts', 'kampungList', 'groupedRw'));
     }
 
     public function create()

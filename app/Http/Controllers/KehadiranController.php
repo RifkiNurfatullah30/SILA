@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\KampungHelper;
 use App\Models\Kegiatan;
 use App\Models\Kehadiran;
 use App\Models\Lansia;
@@ -16,27 +17,27 @@ class KehadiranController extends Controller
         $lansias = collect();
         $kehadiranMap = [];
 
-        $daftarRw = Lansia::select('rw')
-                ->distinct()
-                ->orderBy('rw')
-                ->pluck('rw');
+        $kampungList = KampungHelper::getKampungList();
+        $groupedRw = KampungHelper::getGroupedRw();
 
         if ($request->filled('kegiatan_id')) {
             $selectedKegiatan = Kegiatan::with('rwList')->findOrFail($request->kegiatan_id);
             $query = Lansia::query();
 
-            // Jika kegiatan ini punya target RW khusus, batasi hanya RW tersebut
             $targetedRws = $selectedKegiatan->rw_array;
             if (!empty($targetedRws)) {
                 $query->whereIn('rw', $targetedRws);
             }
 
+            if ($request->filled('kampung')) {
+                $rwsForKampung = KampungHelper::getRwByKampung($request->kampung);
+                $query->whereIn('rw', $rwsForKampung);
+            }
+
             if ($request->filled('rw')) {
-                // Pastikan filter dropdown tidak keluar dari target RW kegiatan
                 if (empty($targetedRws) || in_array($request->rw, $targetedRws)) {
                     $query->where('rw', $request->rw);
                 } else {
-                    // Filter RW tidak valid (di luar target kegiatan), return kosong
                     $query->where('id', 0);
                 }
             }
@@ -48,7 +49,7 @@ class KehadiranController extends Controller
                 ->toArray();
         }
 
-        return view('kehadiran.index', compact('kegiatans', 'selectedKegiatan', 'lansias', 'kehadiranMap', 'daftarRw'));
+        return view('kehadiran.index', compact('kegiatans', 'selectedKegiatan', 'lansias', 'kehadiranMap', 'kampungList', 'groupedRw'));
     }
 
     public function store(Request $request)

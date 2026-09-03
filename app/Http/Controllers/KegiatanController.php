@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\KampungHelper;
 use App\Models\Kegiatan;
 use App\Models\Lansia;
 use Illuminate\Http\Request;
@@ -20,6 +21,13 @@ class KegiatanController extends Controller
             });
         }
 
+        if ($request->filled('kampung')) {
+            $rwsForKampung = KampungHelper::getRwByKampung($request->kampung);
+            $query->whereHas('rwList', function($q) use ($rwsForKampung) {
+                $q->whereIn('rw', $rwsForKampung);
+            });
+        }
+
         if ($request->filled('rw')) {
             $rw = $request->rw;
             $query->whereHas('rwList', function($q) use ($rw) {
@@ -29,15 +37,16 @@ class KegiatanController extends Controller
 
         $kegiatans = $query->orderBy('tanggal_kegiatan', 'desc')->paginate(10)->withQueryString();
         
-        $daftarRw = Lansia::select('rw')->distinct()->orderBy('rw')->pluck('rw');
+        $kampungList = KampungHelper::getKampungList();
+        $groupedRw = KampungHelper::getGroupedRw();
 
-        return view('kegiatan.index', compact('kegiatans', 'daftarRw'));
+        return view('kegiatan.index', compact('kegiatans', 'kampungList', 'groupedRw'));
     }
 
     public function create()
     {
-        $daftarRw = Lansia::select('rw')->distinct()->orderBy('rw')->pluck('rw');
-        return view('kegiatan.create', compact('daftarRw'));
+        $groupedRw = KampungHelper::getGroupedRw();
+        return view('kegiatan.create', compact('groupedRw'));
     }
 
     public function store(Request $request)
@@ -77,8 +86,8 @@ class KegiatanController extends Controller
     public function edit(Kegiatan $kegiatan)
     {
         $kegiatan->load('rwList');
-        $daftarRw = Lansia::select('rw')->distinct()->orderBy('rw')->pluck('rw');
-        return view('kegiatan.edit', compact('kegiatan', 'daftarRw'));
+        $groupedRw = KampungHelper::getGroupedRw();
+        return view('kegiatan.edit', compact('kegiatan', 'groupedRw'));
     }
 
     public function update(Request $request, Kegiatan $kegiatan)

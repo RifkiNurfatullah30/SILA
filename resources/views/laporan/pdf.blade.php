@@ -81,6 +81,9 @@
         <h1>SILA - Sistem Informasi Lansia Aktif</h1>
         <h2>Laporan Keaktifan Lansia</h2>
         <p>Periode: {{ $namaBulan }} {{ $tahun }} | Total Kegiatan: {{ $totalKegiatanBulan }}</p>
+        @if(isset($filterLabel) && $filterLabel !== 'Keseluruhan')
+            <p>Lingkup: {{ $filterLabel }}</p>
+        @endif
     </div>
 
     <table>
@@ -88,6 +91,7 @@
             <tr>
                 <th class="text-center">No</th>
                 <th>Nama</th>
+                <th>Kampung</th>
                 <th>RW</th>
                 <th>JK</th>
                 <th class="text-center">Kegiatan</th>
@@ -101,6 +105,7 @@
                 <tr>
                     <td class="text-center">{{ $i + 1 }}</td>
                     <td>{{ $lansia->nama }}</td>
+                    <td>{{ $lansia->kampung ?? '-' }}</td>
                     <td>{{ $lansia->rw }}</td>
                     <td>{{ $lansia->jenis_kelamin === 'Laki-laki' ? 'L' : 'P' }}</td>
                     <td class="text-center">{{ $lansia->total_kegiatan_valid_bulan }}</td>

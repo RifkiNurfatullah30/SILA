@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\KampungHelper;
 use App\Models\Kegiatan;
 use App\Models\Kehadiran;
 use App\Models\Lansia;
@@ -14,14 +15,13 @@ class LaporanController extends Controller
     {
         $bulan = $request->input('bulan', now()->month);
         $tahun = $request->input('tahun', now()->year);
+        $kampung = $request->input('kampung');
         $rw = $request->input('rw');
 
-        $data = $this->getLaporanData($bulan, $tahun, $rw);
+        $data = $this->getLaporanData($bulan, $tahun, $kampung, $rw);
 
-        $daftarRw = Lansia::select('rw')
-            ->distinct()
-            ->orderBy('rw')
-            ->pluck('rw');
+        $kampungList = KampungHelper::getKampungList();
+        $groupedRw = KampungHelper::getGroupedRw();
 
         $tahunList = Kegiatan::selectRaw('CAST(strftime("%Y", tanggal_kegiatan) AS INTEGER) as tahun')
             ->distinct()
@@ -36,7 +36,9 @@ class LaporanController extends Controller
             'bulan' => $bulan,
             'tahun' => $tahun,
             'tahunList' => $tahunList,
-            'daftarRw' => $daftarRw,
+            'kampungList' => $kampungList,
+            'groupedRw' => $groupedRw,
+            'kampung' => $kampung,
             'rw' => $rw,
         ]));
     }
@@ -45,15 +47,37 @@ class LaporanController extends Controller
     {
         $bulan = $request->input('bulan', now()->month);
         $tahun = $request->input('tahun', now()->year);
-        $rw = $request->input('rw');
 
-        $data = $this->getLaporanData($bulan, $tahun, $rw);
+        $kampungs = $request->input('kampungs', []);
+        $rws = $request->input('rws', []);
+
+        if (!empty($kampungs)) {
+            $rwsFromKampungs = KampungHelper::getRwsByKampungs($kampungs);
+            if (count($kampungs) === 1 && !empty($rws)) {
+                $allRws = array_unique(array_merge($rwsFromKampungs, $rws));
+            } else {
+                $allRws = $rwsFromKampungs;
+            }
+        } else {
+            $allRws = $rws;
+        }
+
+        $data = $this->getLaporanDataMultiRw($bulan, $tahun, $allRws);
         $data['bulan'] = $bulan;
         $data['tahun'] = $tahun;
-        $data['rw'] = $rw;
 
         $namaBulan = $this->getNamaBulan($bulan);
         $data['namaBulan'] = $namaBulan;
+
+        $filterLabel = 'Keseluruhan';
+        if (!empty($kampungs) && !empty($rws) && count($kampungs) === 1) {
+            $filterLabel = 'Kampung: ' . implode(', ', $kampungs) . ' | RW: ' . implode(', ', $rws);
+        } elseif (!empty($kampungs)) {
+            $filterLabel = 'Kampung: ' . implode(', ', $kampungs);
+        } elseif (!empty($rws)) {
+            $filterLabel = 'RW: ' . implode(', ', $rws);
+        }
+        $data['filterLabel'] = $filterLabel;
 
         $pdf = Pdf::loadView('laporan.pdf', $data);
         $pdf->setPaper('A4', 'landscape');
@@ -65,9 +89,22 @@ class LaporanController extends Controller
     {
         $bulan = $request->input('bulan', now()->month);
         $tahun = $request->input('tahun', now()->year);
-        $rw = $request->input('rw');
 
-        $data = $this->getLaporanData($bulan, $tahun, $rw);
+        $kampungs = $request->input('kampungs', []);
+        $rws = $request->input('rws', []);
+
+        if (!empty($kampungs)) {
+            $rwsFromKampungs = KampungHelper::getRwsByKampungs($kampungs);
+            if (count($kampungs) === 1 && !empty($rws)) {
+                $allRws = array_unique(array_merge($rwsFromKampungs, $rws));
+            } else {
+                $allRws = $rwsFromKampungs;
+            }
+        } else {
+            $allRws = $rws;
+        }
+
+        $data = $this->getLaporanDataMultiRw($bulan, $tahun, $allRws);
         $namaBulan = $this->getNamaBulan($bulan);
 
         $filename = "laporan-keaktifan-lansia-{$namaBulan}-{$tahun}.csv";
@@ -83,13 +120,14 @@ class LaporanController extends Controller
 
             fputcsv($file, ["Laporan Keaktifan Lansia - {$namaBulan} {$tahun}"]);
             fputcsv($file, []);
-            fputcsv($file, ['No', 'Nama', 'Jenis Kelamin', 'RW', 'Total Kegiatan', 'Total Hadir', 'Persentase (%)', 'Kategori']);
+            fputcsv($file, ['No', 'Nama', 'Jenis Kelamin', 'Kampung', 'RW', 'Total Kegiatan', 'Total Hadir', 'Persentase (%)', 'Kategori']);
 
             foreach ($data['lansias'] as $i => $lansia) {
                 fputcsv($file, [
                     $i + 1,
                     $lansia->nama,
                     $lansia->jenis_kelamin,
+                    $lansia->kampung ?? '-',
                     'RW ' . $lansia->rw,
                     $lansia->total_kegiatan_valid_bulan,
                     $lansia->total_hadir_bulan,
@@ -104,7 +142,7 @@ class LaporanController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
-    private function getLaporanData(int $bulan, int $tahun, $rw = null): array
+    private function getLaporanData(int $bulan, int $tahun, $kampung = null, $rw = null): array
     {
         $kegiatans = Kegiatan::with('rwList')
             ->whereYear('tanggal_kegiatan', $tahun)
@@ -115,12 +153,52 @@ class LaporanController extends Controller
 
         $query = Lansia::orderBy('nama');
 
+        if (!empty($kampung)) {
+            $rwsForKampung = KampungHelper::getRwByKampung($kampung);
+            $query->whereIn('rw', $rwsForKampung);
+        }
+
         if (!empty($rw)) {
             $query->where('rw', $rw);
         }
 
         $lansias = $query->get();
 
+        $this->calculateLaporanMetrics($lansias, $kegiatans, $kegiatanIds);
+
+        return [
+            'lansias' => $lansias,
+            'totalKegiatanBulan' => $kegiatans->count(),
+        ];
+    }
+
+    private function getLaporanDataMultiRw(int $bulan, int $tahun, array $rws = []): array
+    {
+        $kegiatans = Kegiatan::with('rwList')
+            ->whereYear('tanggal_kegiatan', $tahun)
+            ->whereMonth('tanggal_kegiatan', $bulan)
+            ->get();
+            
+        $kegiatanIds = $kegiatans->pluck('id');
+
+        $query = Lansia::orderBy('nama');
+
+        if (!empty($rws)) {
+            $query->whereIn('rw', $rws);
+        }
+
+        $lansias = $query->get();
+
+        $this->calculateLaporanMetrics($lansias, $kegiatans, $kegiatanIds);
+
+        return [
+            'lansias' => $lansias,
+            'totalKegiatanBulan' => $kegiatans->count(),
+        ];
+    }
+
+    private function calculateLaporanMetrics($lansias, $kegiatans, $kegiatanIds): void
+    {
         foreach ($lansias as $lansia) {
             $totalKegiatanValid = 0;
             foreach ($kegiatans as $keg) {
@@ -153,11 +231,6 @@ class LaporanController extends Controller
                 default => 'danger',
             };
         }
-
-        return [
-            'lansias' => $lansias,
-            'totalKegiatanBulan' => $kegiatans->count(),
-        ];
     }
 
     private function getNamaBulan(int $bulan): string

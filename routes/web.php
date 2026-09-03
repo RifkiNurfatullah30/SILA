@@ -23,6 +23,8 @@ Route::middleware('auth')->group(function () {
         Route::resource('lansia', LansiaController::class)->parameters(['lansia' => 'lansia']);
         Route::resource('kegiatan', KegiatanController::class);
         Route::resource('health-records', HealthRecordController::class);
+        Route::get('/health-records-export-pdf', [HealthRecordController::class, 'exportPdf'])->name('health-records.export-pdf');
+        Route::get('/api/lansia-search', [HealthRecordController::class, 'searchLansia'])->name('api.lansia-search');
 
         Route::get('/kehadiran', [KehadiranController::class, 'index'])->name('kehadiran.index');
         Route::post('/kehadiran', [KehadiranController::class, 'store'])->name('kehadiran.store');

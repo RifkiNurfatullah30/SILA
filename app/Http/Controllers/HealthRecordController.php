@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\KampungHelper;
 use App\Models\HealthRecord;
 use App\Models\Lansia;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,6 +19,13 @@ class HealthRecordController extends Controller
             $search = $request->search;
             $query->whereHas('lansia', function($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('kampung')) {
+            $rwsForKampung = KampungHelper::getRwByKampung($request->kampung);
+            $query->whereHas('lansia', function ($q) use ($rwsForKampung) {
+                $q->whereIn('rw', $rwsForKampung);
             });
         }
 
@@ -35,25 +44,19 @@ class HealthRecordController extends Controller
         }
 
         $records = $query->orderBy('tanggal_pemeriksaan', 'desc')->paginate(15);
-        $daftarRw = Lansia::select('rw')
-        ->distinct()
-        ->orderBy('rw')
-        ->pluck('rw');
+        $kampungList = KampungHelper::getKampungList();
+        $groupedRw = KampungHelper::getGroupedRw();
 
-    return view('health-records.index', compact('records', 'daftarRw'));
+        return view('health-records.index', compact('records', 'kampungList', 'groupedRw'));
     }
 
     public function create()
     {
-    $lansiaList = Lansia::orderBy('nama')->get();
+        $lansiaList = Lansia::orderBy('nama')->get();
+        $healthRecord = null;
 
-    $healthRecord = null;
-
-    return view('health-records.create', compact(
-        'lansiaList',
-        'healthRecord'
-    ));
-}
+        return view('health-records.create', compact('lansiaList', 'healthRecord'));
+    }
 
     public function store(Request $request)
     {
@@ -125,5 +128,84 @@ class HealthRecordController extends Controller
 
         return redirect()->route('health-records.index')
             ->with('success', 'Rekam kesehatan berhasil dihapus.');
+    }
+
+    public function searchLansia(Request $request)
+    {
+        $search = $request->input('q', '');
+        if (strlen($search) < 2) {
+            return response()->json([]);
+        }
+
+        $results = Lansia::where('nama', 'like', "%{$search}%")
+            ->orderBy('nama')
+            ->limit(10)
+            ->get()
+            ->map(function ($lansia) {
+                return [
+                    'id' => $lansia->id,
+                    'nama' => $lansia->nama,
+                    'kampung' => $lansia->kampung ?? '-',
+                    'rw' => $lansia->rw,
+                ];
+            });
+
+        return response()->json($results);
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $query = HealthRecord::with(['lansia', 'pemeriksa']);
+
+        $kampungs = $request->input('kampungs', []);
+        $rws = $request->input('rws', []);
+        $filterLabel = 'Keseluruhan Kelurahan';
+        $selectedLansia = null;
+
+        if ($request->filled('lansia_id')) {
+            $selectedLansia = Lansia::find($request->lansia_id);
+            if ($selectedLansia) {
+                $query->where('lansia_id', $selectedLansia->id);
+                $filterLabel = 'Nama: ' . $selectedLansia->nama . ' | Kampung: ' . ($selectedLansia->kampung ?? '-') . ' | RW: ' . $selectedLansia->rw;
+            }
+        } else {
+            if (!empty($kampungs)) {
+                $rwsFromKampungs = KampungHelper::getRwsByKampungs($kampungs);
+                if (count($kampungs) === 1 && !empty($rws)) {
+                    $allRws = $rws;
+                } else {
+                    $allRws = $rwsFromKampungs;
+                }
+            } else {
+                $allRws = [];
+            }
+
+            if (!empty($allRws)) {
+                $query->whereHas('lansia', function ($q) use ($allRws) {
+                    $q->whereIn('rw', $allRws);
+                });
+            }
+
+            if (!empty($kampungs) && !empty($rws) && count($kampungs) === 1) {
+                $filterLabel = 'Kampung: ' . implode(', ', $kampungs) . ' | RW: ' . implode(', ', $rws);
+            } elseif (!empty($kampungs)) {
+                $filterLabel = 'Kampung: ' . implode(', ', $kampungs);
+            }
+        }
+
+        if ($request->filled('dari_tanggal')) {
+            $query->where('tanggal_pemeriksaan', '>=', $request->dari_tanggal);
+        }
+
+        if ($request->filled('sampai_tanggal')) {
+            $query->where('tanggal_pemeriksaan', '<=', $request->sampai_tanggal);
+        }
+
+        $records = $query->orderBy('tanggal_pemeriksaan', 'desc')->get();
+
+        $pdf = Pdf::loadView('health-records.pdf', compact('records', 'filterLabel'));
+        $pdf->setPaper('A4', 'landscape');
+
+        return $pdf->download('rekam-kesehatan-lansia.pdf');
     }
 }

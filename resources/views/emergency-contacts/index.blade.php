@@ -14,18 +14,29 @@
                     <input type="text" name="search" class="form-control" 
                            value="{{ request('search') }}" placeholder="Nama kontak, telepon...">
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <label class="form-label">Kampung</label>
+                    <select name="kampung" class="form-select">
+                        <option value="">Semua Kampung</option>
+                        @foreach($kampungList as $k)
+                            <option value="{{ $k }}" {{ request('kampung') == $k ? 'selected' : '' }}>
+                                {{ $k }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3">
                     <label class="form-label">Filter RW</label>
-                    <select name="rw" class="form-select">
-                    <option value="">Semua RW</option>
-
-                    @foreach($daftarRw as $rw)
-                        <option value="{{ $rw }}"
-                            {{ request('rw') == $rw ? 'selected' : '' }}>
-                            RW {{ $rw }}
-                        </option>
-                    @endforeach
-                </select>
+                    <select name="rw" class="form-select" id="emc_filter_rw" {{ request('kampung') ? '' : 'disabled' }}>
+                        <option value="">Semua RW</option>
+                        @if(request('kampung') && isset($groupedRw[request('kampung')]))
+                            @foreach($groupedRw[request('kampung')] as $rw)
+                                <option value="{{ $rw }}" {{ request('rw') == $rw ? 'selected' : '' }}>
+                                    RW {{ $rw }}
+                                </option>
+                            @endforeach
+                        @endif
+                    </select>
                 </div>
                 <div class="col-md-3 d-flex gap-2">
                     <button type="submit" class="btn-accent flex-grow-1 justify-content-center">
@@ -149,3 +160,31 @@
     @endif
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const kampungSelect = document.querySelector('select[name="kampung"]');
+    const rwSelect = document.getElementById('emc_filter_rw');
+    const groupedRw = @json($groupedRw);
+
+    kampungSelect.addEventListener('change', function() {
+        const kampung = this.value;
+        rwSelect.innerHTML = '<option value="">Semua RW</option>';
+
+        if (kampung) {
+            rwSelect.disabled = false;
+            const rwList = groupedRw[kampung] || [];
+            rwList.forEach(rw => {
+                const opt = document.createElement('option');
+                opt.value = rw;
+                opt.textContent = 'RW ' + rw;
+                rwSelect.appendChild(opt);
+            });
+        } else {
+            rwSelect.disabled = true;
+        }
+    });
+});
+</script>
+@endpush

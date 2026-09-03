@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\KampungHelper;
 use App\Models\Lansia;
 use Illuminate\Http\Request;
 
@@ -19,18 +20,21 @@ class LansiaController extends Controller
             });
         }
 
+        if ($request->filled('kampung')) {
+            $rwsForKampung = KampungHelper::getRwByKampung($request->kampung);
+            $query->whereIn('rw', $rwsForKampung);
+        }
+
         if ($request->filled('rw')) {
             $query->where('rw', $request->rw);
         }
 
-        $daftarRw = Lansia::select('rw')
-        ->distinct()
-        ->orderBy('rw')
-        ->pluck('rw');
+        $kampungList = KampungHelper::getKampungList();
+        $groupedRw = KampungHelper::getGroupedRw();
 
         $lansias = $query->orderBy('nama')->paginate(10)->withQueryString();
 
-        return view('lansia.index', compact('lansias', 'daftarRw'));
+        return view('lansia.index', compact('lansias', 'kampungList', 'groupedRw'));
     }
 
     public function create()
@@ -42,6 +46,7 @@ class LansiaController extends Controller
     {
         $validated = $request->validate([
             'nama' => ['required', 'string', 'max:255'],
+            'nik' => ['nullable', 'string', 'max:16'],
             'rw' => ['required', 'string', 'max:255'],
             'jenis_kelamin' => ['required', 'in:Laki-laki,Perempuan'],
             'alamat' => ['required', 'string'],
@@ -68,6 +73,7 @@ class LansiaController extends Controller
     {
         $validated = $request->validate([
             'nama' => ['required', 'string', 'max:255'],
+            'nik' => ['nullable', 'string', 'max:16'],
             'rw' => ['required', 'string', 'max:255'],
             'jenis_kelamin' => ['required', 'in:Laki-laki,Perempuan'],
             'alamat' => ['required', 'string'],

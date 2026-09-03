@@ -3,20 +3,29 @@
 @section('page-title', 'Dashboard')
 
 @section('content')
-<form method="GET" action="{{ route('dashboard') }}" class="row mb-4">
+<form method="GET" action="{{ route('dashboard') }}" class="row mb-4 g-2">
 
     <div class="col-md-3">
-        <select name="rw" class="form-select" onchange="this.form.submit()">
-
-            <option value="">Semua RW</option>
-
-            @foreach($daftarRw as $rw)
-                <option value="{{ $rw }}"
-                    {{ request('rw') == $rw ? 'selected' : '' }}>
-                    RW {{ $rw }}
+        <select name="kampung" class="form-select" id="dash_filter_kampung">
+            <option value="">Semua Kampung</option>
+            @foreach($kampungList as $k)
+                <option value="{{ $k }}" {{ request('kampung') == $k ? 'selected' : '' }}>
+                    Kampung {{ $k }}
                 </option>
             @endforeach
+        </select>
+    </div>
 
+    <div class="col-md-3">
+        <select name="rw" class="form-select" id="dash_filter_rw" onchange="this.form.submit()" {{ request('kampung') ? '' : 'disabled' }}>
+            <option value="">Semua RW</option>
+            @if(request('kampung') && isset($groupedRw[request('kampung')]))
+                @foreach($groupedRw[request('kampung')] as $rw)
+                    <option value="{{ $rw }}" {{ request('rw') == $rw ? 'selected' : '' }}>
+                        RW {{ $rw }}
+                    </option>
+                @endforeach
+            @endif
         </select>
     </div>
 
@@ -111,6 +120,7 @@
                     <tr>
                         <th>Peringkat</th>
                         <th>Nama Lansia</th>
+                        <th>Kampung</th>
                         <th>RW</th>
                         <th class="text-end">Keaktifan</th>
                     </tr>
@@ -126,6 +136,7 @@
                                 @endif
                             </td>
                             <td class="fw-bold">{{ $lansia->nama }}</td>
+                            <td>{{ $lansia->kampung ?? '-' }}</td>
                             <td>RW {{ $lansia->rw }}</td>
                             <td class="text-end">
                                 <span class="badge-glass badge-success-glow fw-bold fs-6">
@@ -135,7 +146,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4">
+                            <td colspan="5">
                                 <div class="empty-state py-3">
                                     <i class="bi bi-award text-muted" style="font-size:2rem;"></i>
                                     <p class="mb-0 mt-2">Belum ada data keaktifan</p>
@@ -155,6 +166,28 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+    const dashKampungSelect = document.getElementById('dash_filter_kampung');
+    const dashRwSelect = document.getElementById('dash_filter_rw');
+    const dashGroupedRw = @json($groupedRw);
+
+    dashKampungSelect.addEventListener('change', function() {
+        const kampung = this.value;
+        dashRwSelect.innerHTML = '<option value="">Semua RW</option>';
+        if (kampung) {
+            dashRwSelect.disabled = false;
+            const rwList = dashGroupedRw[kampung] || [];
+            rwList.forEach(rw => {
+                const opt = document.createElement('option');
+                opt.value = rw;
+                opt.textContent = 'RW ' + rw;
+                dashRwSelect.appendChild(opt);
+            });
+        } else {
+            dashRwSelect.disabled = true;
+        }
+        this.form.submit();
+    });
     
     // Observer for theme changes to update charts dynamically
     const observer = new MutationObserver(function(mutations) {

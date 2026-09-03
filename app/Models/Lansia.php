@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\KampungHelper;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -55,6 +56,11 @@ class Lansia extends Model
     public function getUsiaAttribute(): ?int
     {
         return $this->tanggal_lahir ? $this->tanggal_lahir->age : null;
+    }
+
+    public function getKampungAttribute(): ?string
+    {
+        return KampungHelper::getKampungByRw($this->rw);
     }
 
     public function getPersentaseKeaktifanAttribute(): float

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\KampungHelper;
 use App\Models\Kegiatan;
 use App\Models\Kehadiran;
 use App\Models\Lansia;
@@ -13,9 +14,14 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $rw = $request->rw;
+        $kampung = $request->kampung;
 
-        // Query dasar
         $lansiaQuery = Lansia::query();
+
+        if ($kampung) {
+            $rwsForKampung = KampungHelper::getRwByKampung($kampung);
+            $lansiaQuery->whereIn('rw', $rwsForKampung);
+        }
 
         if ($rw) {
             $lansiaQuery->where('rw', $rw);
@@ -40,13 +46,11 @@ class DashboardController extends Controller
             ->sortByDesc('persentase_keaktifan')
             ->take(5);
 
-        $daftarRw = Lansia::select('rw')
-            ->distinct()
-            ->orderBy('rw')
-            ->pluck('rw');
+        $kampungList = KampungHelper::getKampungList();
+        $groupedRw = KampungHelper::getGroupedRw();
 
-        $chartData = $this->getChartData($rw);
-        $pieData = $this->getPieData($rw);
+        $chartData = $this->getChartData($rw, $kampung);
+        $pieData = $this->getPieData($rw, $kampung);
 
         return view('dashboard', compact(
             'totalLansia',
@@ -56,11 +60,12 @@ class DashboardController extends Controller
             'chartData',
             'pieData',
             'topLansia',
-            'daftarRw'
+            'kampungList',
+            'groupedRw'
         ));
     }
 
-    private function getChartData($rw = null): array
+    private function getChartData($rw = null, $kampung = null): array
     {
         $year = now()->year;
         $months = [];
@@ -85,6 +90,11 @@ class DashboardController extends Controller
             }
 
             $lansiaQuery = Lansia::query();
+
+            if ($kampung) {
+                $rwsForKampung = KampungHelper::getRwByKampung($kampung);
+                $lansiaQuery->whereIn('rw', $rwsForKampung);
+            }
 
             if ($rw) {
                 $lansiaQuery->where('rw', $rw);
@@ -124,9 +134,14 @@ class DashboardController extends Controller
         ];
     }
 
-    private function getPieData($rw = null): array
+    private function getPieData($rw = null, $kampung = null): array
     {
         $query = Lansia::query();
+
+        if ($kampung) {
+            $rwsForKampung = KampungHelper::getRwByKampung($kampung);
+            $query->whereIn('rw', $rwsForKampung);
+        }
 
         if ($rw) {
             $query->where('rw', $rw);

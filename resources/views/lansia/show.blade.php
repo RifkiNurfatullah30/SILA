@@ -21,6 +21,7 @@
                     <i class="bi bi-person-fill text-white fs-2"></i>
                 </div>
                 <h5 class="fw-bold mb-1" style="color:var(--text-primary);">{{ $lansia->nama }}</h5>
+                <p style="color:var(--text-muted);font-size:0.85rem;" class="mb-1">Kampung {{ $lansia->kampung ?? '-' }}</p>
                 <p style="color:var(--text-muted);font-size:0.85rem;" class="mb-3">RW {{ $lansia->rw }}</p>
                 <span class="badge-glass badge-{{ $lansia->badge_keaktifan === 'success' ? 'success' : ($lansia->badge_keaktifan === 'primary' ? 'primary' : ($lansia->badge_keaktifan === 'warning' ? 'warning' : 'danger')) }}-glow" style="font-size:0.85rem;padding:0.5rem 1rem;">
                     {{ $lansia->persentase_keaktifan }}% &middot; {{ $lansia->kategori_keaktifan }}
@@ -35,7 +36,15 @@
             </div>
             <div class="card-body p-4">
                 <table class="table table-borderless mb-0">
-                    <tr><td style="width:160px;color:var(--text-muted);font-size:0.85rem;">RW</td><td class="fw-semibold">{{ $lansia->rw }}</td></tr>
+                    <tr><td style="width:160px;color:var(--text-muted);font-size:0.85rem;">NIK</td><td class="fw-semibold">
+                        @if($lansia->nik)
+                            <span class="nik-mono">{{ $lansia->nik }}</span>
+                        @else
+                            <span style="color:var(--text-muted);">-</span>
+                        @endif
+                    </td></tr>
+                    <tr><td style="color:var(--text-muted);font-size:0.85rem;">Kampung</td><td class="fw-semibold">{{ $lansia->kampung ?? '-' }}</td></tr>
+                    <tr><td style="color:var(--text-muted);font-size:0.85rem;">RW</td><td class="fw-semibold">{{ $lansia->rw }}</td></tr>
                     <tr><td style="color:var(--text-muted);font-size:0.85rem;">Jenis Kelamin</td><td class="fw-semibold">{{ $lansia->jenis_kelamin }}</td></tr>
                     <tr><td style="color:var(--text-muted);font-size:0.85rem;">Alamat</td><td class="fw-semibold">{{ $lansia->alamat }}</td></tr>
                 </table>

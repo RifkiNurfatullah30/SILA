@@ -11,7 +11,7 @@
 <div class="glass-card stagger-1 mb-4">
     <div class="card-body p-4">
         <form method="GET" action="{{ route('kehadiran.index') }}" class="row g-3 align-items-end">
-            <div class="col-md-8">
+            <div class="col-md-5">
                 <label for="kegiatan_id" class="form-label">Pilih Kegiatan</label>
                 <select class="form-select" name="kegiatan_id" id="kegiatan_id" onchange="this.form.submit()">
                     <option value="">-- Pilih Kegiatan --</option>
@@ -22,18 +22,28 @@
                     @endforeach
                 </select>
             </div>
-             <div class="col-md-3">
-                <select name="rw" class="form-select" onchange="this.form.submit()">
-
-                    <option value="">Semua RW</option>
-
-                    @foreach($daftarRw as $rw)
-                        <option value="{{ $rw }}"
-                            {{ request('rw') == $rw ? 'selected' : '' }}>
-                            RW {{ $rw }}
+            <div class="col-md-3">
+                <label class="form-label">Kampung</label>
+                <select name="kampung" class="form-select" id="khd_filter_kampung" onchange="this.form.submit()">
+                    <option value="">Semua Kampung</option>
+                    @foreach($kampungList as $k)
+                        <option value="{{ $k }}" {{ request('kampung') == $k ? 'selected' : '' }}>
+                            {{ $k }}
                         </option>
                     @endforeach
-
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">RW</label>
+                <select name="rw" class="form-select" id="khd_filter_rw" onchange="this.form.submit()" {{ request('kampung') ? '' : 'disabled' }}>
+                    <option value="">Semua RW</option>
+                    @if(request('kampung') && isset($groupedRw[request('kampung')]))
+                        @foreach($groupedRw[request('kampung')] as $rw)
+                            <option value="{{ $rw }}" {{ request('rw') == $rw ? 'selected' : '' }}>
+                                RW {{ $rw }}
+                            </option>
+                        @endforeach
+                    @endif
                 </select>
             </div>
         </form>
@@ -60,6 +70,7 @@
                         <tr>
                             <th>No</th>
                             <th>Nama Lansia</th>
+                            <th>Kampung</th>
                             <th>RW</th>
                             <th>Status Kehadiran</th>
                         </tr>
@@ -69,6 +80,7 @@
                             <tr style="animation: cardSlideUp 0.4s cubic-bezier(.4,0,.2,1) {{ ($i * 0.03) }}s both;">
                                 <td>{{ $i + 1 }}</td>
                                 <td class="fw-semibold">{{ $lansia->nama }}</td>
+                                <td>{{ $lansia->kampung ?? '-' }}</td>
                                 <td>RW {{ $lansia->rw }}</td>
                                 <td>
                                     <div class="btn-group" role="group">
@@ -82,7 +94,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4">
+                                <td colspan="5">
                                     <div class="empty-state">
                                         <i class="bi bi-people"></i>
                                         <p>Belum ada data lansia. <a href="{{ route('lansia.create') }}" style="color:var(--accent);">Tambah lansia</a> terlebih dahulu.</p>
@@ -106,3 +118,36 @@
 </div>
 @endif
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const kampungSelect = document.getElementById('khd_filter_kampung');
+    const rwSelect = document.getElementById('khd_filter_rw');
+    const groupedRw = @json($groupedRw);
+
+    kampungSelect.addEventListener('change', function() {
+        const kampung = this.value;
+        rwSelect.innerHTML = '<option value="">Semua RW</option>';
+
+        if (kampung) {
+            rwSelect.disabled = false;
+            const rwList = groupedRw[kampung] || [];
+            rwList.forEach(rw => {
+                const opt = document.createElement('option');
+                opt.value = rw;
+                opt.textContent = 'RW ' + rw;
+                rwSelect.appendChild(opt);
+            });
+        } else {
+            rwSelect.disabled = true;
+        }
+        this.form.submit();
+    });
+
+    if (!kampungSelect.value) {
+        rwSelect.disabled = true;
+    }
+});
+</script>
+@endpush
